@@ -15,9 +15,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Personal Expenses',
       theme: ThemeData(
-        primarySwatch: Colors.purple,
-        fontFamily: 'Quicksand',
-      ),
+          primarySwatch: Colors.purple,
+          fontFamily: 'Quicksand',
+          textTheme: const TextTheme(
+            displayLarge: TextStyle(
+              fontSize: 18,
+              fontFamily: 'Open Sans',
+              fontWeight: FontWeight.w400,
+            ),
+          )),
       home: const MyHomePage(),
     );
   }
@@ -43,19 +49,22 @@ class _MyHomePageState extends State<MyHomePage> {
     //   title: 'Wallet',
     //   amount: 16.93,
     //   date: DateTime.now(),
-    // )
+    // ),
   ];
 
-  void onAdd(String title, double amount) {
+  void onAdd(String title, double amount, DateTime chosenDate) {
     final newTransaction = Transaction(
       id: DateTime.now().toString(),
       title: title,
       amount: amount,
-      date: DateTime.now(),
+      date: chosenDate,
     );
 
     setState(() {
       userTransaction.add(newTransaction);
+      userTransaction.sort(
+        (a, b) => b.date.compareTo(a.date),
+      );
     });
   }
 
@@ -68,6 +77,12 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       },
     );
+  }
+
+  void onDelete(String id) {
+    setState(() {
+      userTransaction.removeWhere((item) => item.id == id);
+    });
   }
 
   @override
@@ -93,13 +108,10 @@ class _MyHomePageState extends State<MyHomePage> {
           // mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              child: const Card(
-                color: Colors.blue,
-                child: Text('CHART'),
-              ),
+            TransactionList(
+              transactions: userTransaction,
+              deleteItem: onDelete,
             ),
-            TransactionList(transactions: userTransaction),
           ],
         ),
       ),

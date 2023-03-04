@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class TransactionInput extends StatefulWidget {
   final Function addTransaction;
@@ -14,21 +15,44 @@ class TransactionInput extends StatefulWidget {
 
 class _TransactionInputState extends State<TransactionInput> {
   final titleController = TextEditingController();
-
   final amountController = TextEditingController();
+  late DateTime selectedDate = DateTime(2018, 12, 31);
 
   void submitData() {
+    if (amountController.text.isEmpty) {
+      return;
+    }
+
     final enteredTitle = titleController.text;
     final enteredAmount = double.parse(amountController.text);
-    if (enteredTitle.isEmpty || enteredAmount <= 0) {
+    if (enteredTitle.isEmpty ||
+        enteredAmount <= 0 ||
+        selectedDate == DateTime(2018, 12, 31)) {
       return;
     }
     widget.addTransaction(
       enteredTitle,
       enteredAmount,
+      selectedDate,
     );
 
     Navigator.of(context).pop();
+  }
+
+  void datePicker() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2019),
+      lastDate: DateTime.now(),
+    ).then((pickedDate) {
+      if (pickedDate == null) {
+        return;
+      }
+      setState(() {
+        selectedDate = pickedDate;
+      });
+    });
   }
 
   @override
@@ -55,12 +79,33 @@ class _TransactionInputState extends State<TransactionInput> {
               onSubmitted: (_) => submitData(),
               // (_) => submitData : 인수를 얻지만 사용하지는 않음을 뜻함.
             ),
-            TextButton(
+            SizedBox(
+              height: 70,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      selectedDate == DateTime(2018, 12, 31)
+                          ? 'No Date Chosen'
+                          : DateFormat.yMd().format(selectedDate),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: datePicker,
+                    child: const Text(
+                      'Choose Date',
+                      style: TextStyle(),
+                    ),
+                  )
+                ],
+              ),
+            ),
+            ElevatedButton(
               onPressed: submitData,
               child: const Text(
                 'Add Transaction',
                 style: TextStyle(
-                  color: Colors.purple,
+                  color: Colors.white,
                 ),
               ),
             )
